@@ -89,6 +89,9 @@ def predict():
                            confidence=f"{confidence:.2f}",
                            user_image=file_path)
 
+import os
+
 if __name__ == "__main__":
-    # Use threaded=False for stability on Apple Silicon with TensorFlow
-    app.run(threaded=False, port=8081, debug=True)
+    # Use environment PORT if available (e.g. 7860 in Docker), otherwise default to 8081 locally
+    port = int(os.environ.get("PORT", 8081))
+    app.run(host='0.0.0.0', port=port, threaded=False, debug=False)

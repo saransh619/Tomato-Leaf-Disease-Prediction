@@ -57,6 +57,15 @@ Open your browser and navigate to `http://127.0.0.1:8081`.
 
 ---
 
+## ☁️ Cloud Deployment (Docker & Hugging Face)
+This project is configured for seamless deployment on **Hugging Face Spaces** using Docker.
+
+1. The included `Dockerfile` automatically builds the environment.
+2. The Flask application dynamically adapts to Hugging Face's required port (`7860`).
+3. To deploy, simply create a new **Docker** space on Hugging Face and push this repository.
+
+---
+
 ## 📂 Project Structure
 - `app.py`: The main Flask web server.
 - `model.h5`: The pre-trained AI brain.
