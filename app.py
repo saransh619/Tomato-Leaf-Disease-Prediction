@@ -1,90 +1,94 @@
-#Import necessary libraries
-from flask import Flask, render_template, request
-
-import numpy as np
 import os
-
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import img_to_array
+import uuid
+import numpy as np
+from flask import Flask, render_template, request
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.models import load_model
-
-filepath = './model.h5'
-model = load_model(filepath)
-print(model)
-print("Model Loaded Successfully")
-
-def pred_tomato_disease(tomato_plant):
-  test_image = load_img(tomato_plant, target_size = (128, 128)) # load image 
-  print("@@ Got Image for prediction")
-  
-  test_image = img_to_array(test_image)/255 # convert image to np array and normalize
-  test_image = np.expand_dims(test_image, axis = 0) # change dimention 3D to 4D
-  
-  result = model.predict(test_image) # predict diseased plant or not
-  print('@@ Raw result = ', result)
-  
-  pred = np.argmax(result, axis=1)
-  print(pred)
-  print(result[0][pred])
-
-  if pred==0:
-      return "Tomato - Bacteria Spot Disease", 'Tomato-Bacteria Spot.html'
-       
-  elif pred==1:
-      return "Tomato - Early Blight Disease", 'Tomato-Early_Blight.html'
-        
-  elif pred==2:
-      return "Tomato - Healthy and Fresh", 'Tomato-Healthy.html'
-        
-  elif pred==3:
-      return "Tomato - Late Blight Disease", 'Tomato - Late_blight.html'
-       
-  elif pred==4:
-      return "Tomato - Leaf Mold Disease", 'Tomato - Leaf_Mold.html'
-        
-  elif pred==5:
-      return "Tomato - Septoria Leaf Spot Disease", 'Tomato - Septoria_leaf_spot.html'
-        
-  elif pred==6:
-      return "Tomato - Target Spot Disease", 'Tomato - Target_Spot.html'
-        
-  elif pred==7:
-      return "Tomato - Tomoato Yellow Leaf Curl Virus Disease", 'Tomato - Tomato_Yellow_Leaf_Curl_Virus.html'
-
-  elif pred==8:
-      return "Tomato - Tomato Mosaic Virus Disease", 'Tomato - Tomato_mosaic_virus.html'
-        
-  elif pred==9:
-      return "Tomato - Two Spotted Spider Mite Disease", 'Tomato - Two-spotted_spider_mite.html'
-
-    
 
 # Create flask instance
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static/upload/'
 
-# render index.html page
+# Load the model once at startup (Perfect for performance)
+filepath = './model.h5'
+model = load_model(filepath)
+print("✅ AI Model Loaded & Ready for 2026")
+
+# Disease Information Dictionary (The Source of Truth)
+DISEASE_INFO = {
+    0: {"title": "Tomato - Bacterial Spot Disease", "treatment": "Use copper-based fungicides and avoid overhead watering to prevent spread."},
+    1: {"title": "Tomato - Early Blight Disease", "treatment": "Remove infected lower leaves and apply fungicides containing chlorothalonil or copper."},
+    2: {"title": "Tomato - Healthy and Fresh", "treatment": "Your plant is doing great! Keep up the good work with regular watering and sunlight."},
+    3: {"title": "Tomato - Late Blight Disease", "treatment": "Extremely dangerous! Remove infected plants immediately. Apply copper-based sprays to others."},
+    4: {"title": "Tomato - Leaf Mold Disease", "treatment": "Improve air circulation around plants and reduce humidity. Use calcium-based sprays if needed."},
+    5: {"title": "Tomato - Septoria Leaf Spot Disease", "treatment": "Remove infected leaves. Apply fungicides like chlorothalonil or copper-based sprays."},
+    6: {"title": "Tomato - Target Spot Disease", "treatment": "Avoid overhead irrigation. Apply fungicides containing azoxystrobin or chlorothalonil."},
+    7: {"title": "Tomato - Tomato Yellow Leaf Curl Virus Disease", "treatment": "Spread by whiteflies. Use insecticidal soaps and remove infected plants immediately."},
+    8: {"title": "Tomato - Tomato Mosaic Virus Disease", "treatment": "No cure. Remove and burn infected plants. Wash hands and tools thoroughly."},
+    9: {"title": "Tomato - Two-Spotted Spider Mite Disease", "treatment": "Use neem oil or insecticidal soaps. Increasing humidity can also help."},
+}
+
+def pred_tomato_disease(image_path):
+    """
+    Handles image preprocessing and model prediction.
+    Target size 128x128 matches the training notebook configuration.
+    """
+    try:
+        test_image = load_img(image_path, target_size=(128, 128))
+        test_image = img_to_array(test_image) / 255.0
+        test_image = np.expand_dims(test_image, axis=0)
+        
+        result = model.predict(test_image)
+        pred_idx = np.argmax(result, axis=1)[0]
+        confidence = float(np.max(result) * 100)
+        
+        return pred_idx, confidence
+    except Exception as e:
+        print(f"❌ Error during prediction: {e}")
+        return None, 0
+
 @app.route("/", methods=['GET', 'POST'])
 def home():
-        return render_template('index.html')
-    
- 
-# get input image from client then predict class and render respective .html page for solution
-@app.route("/predict", methods = ['GET','POST'])
-def predict():
-     if request.method == 'POST':
-        file = request.files['image'] # fetch input
-        filename = file.filename        
-        print("@@ Input posted = ", filename)
-        
-        file_path = os.path.join('./static/upload/', filename)
-        file.save(file_path)
-        print(file_path)
+    return render_template('index.html')
 
-        print("@@ Predicting class......")
-        pred, output_page = pred_tomato_disease(tomato_plant=file_path)
-              
-        return render_template(output_page, pred_output = pred, user_image = file_path)
+@app.route("/predict", methods=['POST'])
+def predict():
+    if 'image' not in request.files:
+        return "No file uploaded", 400
+        
+    file = request.files['image']
+    if file.filename == '':
+        return "No file selected", 400
+
+    # PERFECT PERFORMANCE: Give file a unique name to avoid cache issues
+    ext = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{ext}"
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+    file.save(file_path)
+
+    # Predict
+    pred_idx, confidence = pred_tomato_disease(file_path)
     
-# For local system & cloud
+    if pred_idx is None:
+        return "Error processing image", 500
+
+    # PERFECT LOGIC: Confidence Threshold
+    if confidence < 25.0:
+        return render_template('index.html', 
+                               prediction="Uncertain Result", 
+                               treatment="The AI is not confident enough to identify this leaf. Please try a clearer photo with better lighting.", 
+                               confidence=f"{confidence:.2f}",
+                               user_image=file_path)
+    
+    # Get info from our dictionary
+    info = DISEASE_INFO.get(pred_idx, {"title": "Unknown", "treatment": "Consult an expert."})
+    
+    return render_template('index.html', 
+                           prediction=info['title'], 
+                           treatment=info['treatment'], 
+                           confidence=f"{confidence:.2f}",
+                           user_image=file_path)
+
 if __name__ == "__main__":
-    app.run(threaded=False,port=8081) 
+    # Use threaded=False for stability on Apple Silicon with TensorFlow
+    app.run(threaded=False, port=8081, debug=True)

@@ -48,16 +48,16 @@ train_datagen = ImageDataGenerator(rescale = 1./255, shear_range = 0.2, zoom_ran
 validation_datagen = ImageDataGenerator(rescale=1./255) 
 test_datagen = ImageDataGenerator(rescale = 1./255)
 
-training_set = train_datagen.flow_from_directory('./Dataset/train/', # relative path from working directoy
+training_set = train_datagen.flow_from_directory('./Dataset/Training/', # relative path from working directoy
                                                  target_size = (128, 128),
                                                  batch_size = 6, class_mode = 'categorical')
 
-valid_set = test_datagen.flow_from_directory('./Dataset/val/', # relative path from working directoy
+valid_set = test_datagen.flow_from_directory('./Dataset/Validation/', # relative path from working directoy
                                              target_size = (128, 128), 
                                         batch_size = 3, class_mode = 'categorical')
 
 test_set = test_datagen.flow_from_directory(
-        './Dataset/test/',
+        './Dataset/Testing/',
         target_size = (128, 128),
         class_mode = 'categorical',
         color_mode = "rgb"
@@ -98,17 +98,12 @@ valid_set.reset()
 print("[INFO] Calculating model accuracy")
 scores = classifier.evaluate(valid_set)
 print(f"Test Loss: {scores[0]}")
-print(f"Test Accuracy: {scores[1]*35}")
+print(f"Test Accuracy: {scores[1]*100:.2f}%")
 # scores = classifier.evaluate(valid_set)
 # print("%s%s: %.2f%%" % ("evaluate ",classifier.metrics_names[1], scores[1]*35))
 
 
-#saved model using h5 
-classifier_json=classifier.to_json()
-with open("model1.json", "w") as json_file:
-    json_file.write(classifier_json)
-# serialize weights to HDF5
-    classifier.save_weights("my_model_weights.h5")
-    classifier.save("model.h5")
-    print("Saved model to disk")
+# Save the final model
+classifier.save("model.h5")
+print("✅ Saved model.h5 to disk")
 
