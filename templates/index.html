@@ -1,105 +1,297 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TomatoAI | Smart Disease Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --accent: #e74c3c;
+            --bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+        }
+
         * {
-            margin: 0px;
-            padding: 0px;
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            background-image: url('/static/images/bgTomato.jpg');
-            background-repeat: no-repeat;
-            background-size: cover;
+            background: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(46, 204, 113, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(231, 76, 60, 0.1) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
         }
 
-        form {
-            display: flex;
-            height: 85vh;
+        .container {
+            width: 100%;
+            max-width: 900px;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #2ecc71, #a8e063);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(46, 204, 113, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-predict {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-predict:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .result-image-container {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-content h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        .treatment-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .treatment-box h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 0.8rem;
+        }
+
+        .treatment-box p {
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .main-card { padding: 1.5rem; }
+            .result-section { grid-template-columns: 1fr; }
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
             justify-content: center;
             align-items: center;
-            margin-top: -150px;
-            width: 60%;
-            text-align: center;
-            margin-left: 300px;
+            flex-direction: column;
         }
 
-        .details h2 {
-            position: relative;
-            top: 100px;
-            margin: auto;
-            color: rgb(18, 231, 231);
-            font-size: 3rem;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
         }
 
-        label:hover {
-            transform: scale(1.03);
-        }
-
-        .details h2 {
-            /* margin-bottom: 300px; */
-            position: relative;
-            top: 100px;
-            margin: auto;
-            color: rgb(18, 231, 231);
-            font-size: 3rem;
-        }
-
-        .details h1 {
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            background-color: rgb(8, 8, 8);
-        }
-
-        .upload {
-            font-size: 20px;
-            background-color: rgb(255, 252, 252);
-            border-radius: 20px;
-            outline: none;
-            cursor: pointer;
-            width: 500px;
-            color: rgb(0, 0, 0);
-            border: 3px solid rgb(45, 47, 49);
-        }
-
-        ::-webkit-file-upload-button {
-            color: rgb(255, 252, 252);
-            padding: 20px;
-            border: 2px solid rgb(201, 6, 6);
-            background-color: rgb(201, 6, 6);
-            border-radius: 15px;
-        }
-
-        ::-webkit-file-upload-button:hover {
-            border-radius: 20px;
-            border: 2px solid rgb(177, 174, 174);
-        }
-
-        input[type="submit"] {
-            position: absolute;
-            margin-top: 200px;
-            padding: 15px 35px;
-            background-color: rgb(0 127 32);
-            border-radius: 15px;
-            color: rgb(248, 227, 227);
-            font-size: 1.5rem;
-            cursor: pointer;
-            border: 4px solid rgb(64 110 61);
-            outline: none;
-            border: none;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
-    <title>Tomato Leaf Disease Prediction System</title>
 </head>
 <body>
-    <h1 style="text-align:center;font-size:4rem;color: whitesmoke;">Tomato Leaf Disease Prediction System</h1>
-    <section>
-        <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showloading()">
-            <input type="file" name="image" class="upload"><br><br>
-            <input type="submit" value="Predict">
-        </form>
+
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p>AI is analyzing the leaf...</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>TomatoAI</h1>
+            <p class="subtitle">Next-Gen Plant Disease Intelligence System</p>
+        </header>
+
+        <div class="main-card">
+            <form action="/predict" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-area" id="dropZone">
+                    <span class="upload-icon">🍃</span>
+                    <p id="fileLabel">Drop your leaf photo here or click to browse</p>
+                    <input type="file" name="image" accept="image/*" required onchange="updateFileName(this)">
+                </div>
+                <button type="submit" class="btn-predict" onclick="showLoading()">Analyze Plant</button>
+            </form>
+
+            {% if prediction %}
+            <div class="result-section">
+                <div class="result-image-container">
+                    <img src="{{ user_image }}" alt="Uploaded leaf">
+                </div>
+                <div class="result-content">
+                    <div class="confidence-badge">Confidence Score: {{ confidence }}%</div>
+                    <h2>{{ prediction }}</h2>
+                    <div class="treatment-box">
+                        <h3>Recommended Treatment</h3>
+                        <p>{{ treatment }}</p>
+                    </div>
+                    <button class="btn-predict" style="margin-top: 2rem; background: transparent; border: 1px solid rgba(255,255,255,0.2);" onclick="window.location.href='/'">New Scan</button>
+                </div>
+            </div>
+            {% endif %}
         </div>
-    </section>
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            const fileName = input.files[0] ? input.files[0].name : "No file chosen";
+            document.getElementById('fileLabel').innerHTML = `<strong>Selected:</strong> ${fileName}`;
+            document.getElementById('dropZone').style.borderColor = "#2ecc71";
+            document.getElementById('dropZone').style.background = "rgba(46, 204, 113, 0.05)";
+        }
+
+        function showLoading() {
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput.files.length > 0) {
+                document.getElementById('loading').style.display = 'flex';
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,53 +1,51 @@
 import cv2
-from matplotlib import pyplot as plt
 import os
 import numpy as np
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.models import load_model
 
-filepath = 'D:/Plant-Leaf-Disease-Prediction/model.h5'
+# Use relative paths so it works on any computer (Mac or Windows)
+filepath = './model.h5'
 model = load_model(filepath)
-print(model)
+print("✅ AI Model Loaded Successfully")
 
-print("Model Loaded Successfully")
+# Disease Dictionary for mapping results to names
+DISEASE_INFO = {
+    0: "Tomato - Bacterial Spot Disease",
+    1: "Tomato - Early Blight Disease",
+    2: "Tomato - Healthy and Fresh",
+    3: "Tomato - Late Blight Disease",
+    4: "Tomato - Leaf Mold Disease",
+    5: "Tomato - Septoria Leaf Spot Disease",
+    6: "Tomato - Target Spot Disease",
+    7: "Tomato - Tomato Yellow Leaf Curl Virus Disease",
+    8: "Tomato - Tomato Mosaic Virus Disease",
+    9: "Tomato - Two-Spotted Spider Mite Disease",
+}
 
-tomato_plant = cv2.imread('D:/Plant-Leaf-Disease-Prediction/Dataset/test/Tomato___Early_blight (1).jpg')
-test_image = cv2.resize(tomato_plant, (128,128)) # load image 
-  
-test_image = img_to_array(test_image)/255 # convert image to np array and normalize
-test_image = np.expand_dims(test_image, axis = 0) # change dimention 3D to 4D
-  
-result = model.predict(test_image) # predict diseased palnt or not
-  
-pred = np.argmax(result, axis=1)
-print(pred)
-if pred==0:
-    print( "Tomato - Bacteria Spot Disease")
-       
-elif pred==1:
-    print("Tomato - Early Blight Disease")
-        
-elif pred==2:
-    print("Tomato - Healthy and Fresh")
-        
-elif pred==3:
-    print("Tomato - Late Blight Disease")
-       
-elif pred==4:
-    print("Tomato - Leaf Mold Disease")
-        
-elif pred==5:
-    print("Tomato - Septoria Leaf Spot Disease")
-        
-elif pred==6:
-    print("Tomato - Target Spot Disease")
-        
-elif pred==7:
-      print("Tomato - Tomoato Yellow Leaf Curl Virus Disease")
-elif pred==8:
-      print("Tomato - Tomato Mosaic Virus Disease")
-        
-elif pred==9:
-      print("Tomato - Two Spotted Spider Mite Disease")
+# Pick a test image from your dataset
+# We use a relative path here so it works on your Mac
+image_path = './Dataset/Testing/Early_Blight.JPG'
 
+if not os.path.exists(image_path):
+    print(f"❌ Error: Could not find image at {image_path}")
+else:
+    # Load and preprocess
+    test_image = load_img(image_path, target_size=(128, 128))
+    test_image = img_to_array(test_image) / 255.0
+    test_image = np.expand_dims(test_image, axis=0)
+
+    # Predict
+    result = model.predict(test_image)
+    pred_idx = np.argmax(result, axis=1)[0]
+    confidence = float(np.max(result) * 100)
+
+    # Output result
+    info = DISEASE_INFO.get(pred_idx, {"title": "Unknown", "treatment": "Consult an expert."})
+    
+    print("-" * 30)
+    print(f"🔍 PREDICTION RESULT:")
+    print(f"Disease Name: {info['title']}")
+    print(f"Confidence:   {confidence:.2f}%")
+    print(f"Treatment:    {info['treatment']}")
+    print("-" * 30)
