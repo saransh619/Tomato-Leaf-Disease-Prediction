@@ -15,5 +15,8 @@ COPY . .
 ENV PORT=7860
 EXPOSE 7860
 
+# Grant permissions to the upload folder so Hugging Face can save images
+RUN mkdir -p /app/static/upload && chmod -R 777 /app/static/upload
+
 # Run the Flask app
 CMD ["python", "app.py"]
