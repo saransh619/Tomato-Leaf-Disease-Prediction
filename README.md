@@ -65,11 +65,11 @@ This project is configured for seamless deployment on **Hugging Face Spaces** us
 
 1. The included `Dockerfile` automatically builds the environment.
 2. The Flask application dynamically adapts to Hugging Face's required port (`7860`).
-3. To deploy, simply run the deployment script:
+3. **To deploy or update the live website**, simply run the deployment script:
    ```bash
    python deploy.py
    ```
-   This will securely prompt for your Hugging Face API token and push the code directly, bypassing any Git LFS restrictions for large model files.
+   This will securely prompt for your Hugging Face API token and push the code directly, bypassing any Git LFS restrictions. *(Note: If you modify `app.py` or the UI in the future, running this script is the only step required to sync your updates to the live Hugging Face server!)*
 
 ---
 
