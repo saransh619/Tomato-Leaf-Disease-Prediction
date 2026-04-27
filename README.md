@@ -1,6 +1,8 @@
 
 # 🍅 Tomato Leaf Disease Prediction (2026 Edition)
 
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/saransh619/Tomato-Disease-AI)
+
 A professional, deep-learning-powered web application that identifies 10 different types of tomato plant diseases using a Convolutional Neural Network (CNN). Originally developed as my Final Year University Project in 2022, I have completely re-architected, redesigned, and modernized the entire system in 2026 to reflect industry-standard practices, including a premium glassmorphic UI, Docker deployment, and optimized backend logic.
 
 ## 🌟 Key Features
