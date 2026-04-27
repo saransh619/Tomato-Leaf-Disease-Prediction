@@ -1,7 +1,7 @@
 
 # 🍅 Tomato Leaf Disease Prediction (2026 Edition)
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/saransh619/Tomato-Disease-AI)
+> **🌍 Experience the AI:** <a href="https://huggingface.co/spaces/saransh619/Tomato-Disease-AI" target="_blank">Click here to view and interact with the Live Demo of this project.</a>
 
 A professional, deep-learning-powered web application that identifies 10 different types of tomato plant diseases using a Convolutional Neural Network (CNN). Originally developed as my Final Year University Project in 2022, I have completely re-architected, redesigned, and modernized the entire system in 2026 to reflect industry-standard practices, including a premium glassmorphic UI, Docker deployment, and optimized backend logic.
 
@@ -65,12 +65,17 @@ This project is configured for seamless deployment on **Hugging Face Spaces** us
 
 1. The included `Dockerfile` automatically builds the environment.
 2. The Flask application dynamically adapts to Hugging Face's required port (`7860`).
-3. To deploy, simply create a new **Docker** space on Hugging Face and push this repository.
+3. To deploy, simply run the deployment script:
+   ```bash
+   python deploy.py
+   ```
+   This will securely prompt for your Hugging Face API token and push the code directly, bypassing any Git LFS restrictions for large model files.
 
 ---
 
 ## 📂 Project Structure
 - `app.py`: The main Flask web server.
+- `deploy.py`: Secure deployment script for Hugging Face Spaces.
 - `model.h5`: The pre-trained AI brain.
 - `Training.py`: Script to retrain the model from scratch.
 - `Example.py`: A quick terminal-based prediction script.
