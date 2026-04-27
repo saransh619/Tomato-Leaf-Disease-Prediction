@@ -12,7 +12,7 @@ try:
         repo_id="saransh619/Tomato-Disease-AI",
         repo_type="space",
         token=token,
-        ignore_patterns=["venv/*", ".git/*", "__pycache__/*", "deploy.py"]
+        ignore_patterns=["venv/*", ".git/*", "__pycache__/*", "deploy.py", "README.md"]
     )
     print("Deployment successful. Space is now building.")
 except Exception as e:
