@@ -1,11 +1,4 @@
----
-title: Tomato Disease AI
-emoji: 🍅
-colorFrom: green
-colorTo: blue
-sdk: docker
-pinned: false
----
+
 # 🍅 Tomato Leaf Disease Prediction (2026 Edition)
 
 A professional, deep-learning-powered web application that identifies 10 different types of tomato plant diseases using a Convolutional Neural Network (CNN). Originally developed as my Final Year University Project in 2022, I have completely re-architected, redesigned, and modernized the entire system in 2026 to reflect industry-standard practices, including a premium glassmorphic UI, Docker deployment, and optimized backend logic.
