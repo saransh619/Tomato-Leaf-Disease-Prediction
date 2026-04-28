@@ -72,11 +72,11 @@ def predict():
     if pred_idx is None:
         return "Error processing image", 500
 
-    # PERFECT LOGIC: Confidence Threshold
-    if confidence < 25.0:
+    # STRICT LOGIC: OOD (Out-of-Bounds) Confidence Gatekeeper
+    if confidence < 65.0:
         return render_template('index.html', 
-                               prediction="Uncertain Result", 
-                               treatment="The AI is not confident enough to identify this leaf. Please try a clearer photo with better lighting.", 
+                               prediction="Unrecognized Image", 
+                               treatment="The AI does not recognize this as a tomato leaf. Please ensure you are uploading a clear, close-up photo of a plant.", 
                                confidence=f"{confidence:.2f}",
                                user_image=file_path)
     

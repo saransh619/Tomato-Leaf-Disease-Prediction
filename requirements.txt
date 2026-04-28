@@ -5,4 +5,4 @@ tensorflow
 pandas
 matplotlib
 scikit-learn
-h5py
+h5pyscipy
