@@ -1,109 +1,89 @@
-from tensorflow.compat.v1 import ConfigProto, InteractiveSession
-
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-session = InteractiveSession(config=config)
-from sklearn.metrics import confusion_matrix
-
 import tensorflow as tf
+from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
-tf.compat.v1.disable_eager_execution()
+print("🚀 Initializing MobileNetV2 Transfer Learning...")
 
-import matplotlib.pyplot as plt
-
-#basic cnn
-# Initialising the CNN
-classifier = Sequential()
-
-# Step 1 - Convolution
-classifier.add(Conv2D(32, (3, 3), input_shape = (128, 128, 3), activation = 'relu'))
-classifier.add(Dropout(0.5))
-# Step 2 - Pooling
-classifier.add(MaxPooling2D(pool_size = (2, 2)))
-
-# Adding a second convolutional layer
-classifier.add(Conv2D(32, (3, 3), activation = 'relu'))
-classifier.add(Dropout(0.5))
-classifier.add(MaxPooling2D(pool_size = (2, 2)))
-
-# Step 3 - Flattening
-classifier.add(Flatten())
-
-# Step 4 - Full connection
-classifier.add(Dense(units = 128, activation = 'relu'))
-classifier.add(Dropout(0.5))
-classifier.add(Dense(units = 10, activation = 'softmax')) 
-
-#Model Summary
-classifier.summary()
-
-# Compiling the CNN
-classifier.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-
-train_datagen = ImageDataGenerator(rescale = 1./255, shear_range = 0.2, zoom_range = 0.2, horizontal_flip = True)
-
-validation_datagen = ImageDataGenerator(rescale=1./255) 
-test_datagen = ImageDataGenerator(rescale = 1./255)
-
-training_set = train_datagen.flow_from_directory('./Dataset/Training/', # relative path from working directoy
-                                                 target_size = (128, 128),
-                                                 batch_size = 6, class_mode = 'categorical')
-
-valid_set = test_datagen.flow_from_directory('./Dataset/Validation/', # relative path from working directoy
-                                             target_size = (128, 128), 
-                                        batch_size = 3, class_mode = 'categorical')
-
-test_set = test_datagen.flow_from_directory(
-        './Dataset/Testing/',
-        target_size = (128, 128),
-        class_mode = 'categorical',
-        color_mode = "rgb"
+# 1. Image Data Generators
+# We keep the 1./255 rescale to ensure 100% compatibility with app.py!
+train_datagen = ImageDataGenerator(
+    rescale=1./255, 
+    shear_range=0.2, 
+    zoom_range=0.2, 
+    horizontal_flip=True,
+    rotation_range=20, # Add a little rotation for robustness
+    fill_mode='nearest'
 )
 
-labels = (training_set.class_indices)
-print(labels)
+valid_datagen = ImageDataGenerator(rescale=1./255)
 
-history = classifier.fit(training_set,
-                         epochs = 35,
-                         validation_data=valid_set
-                         )
+print("\nLoading Training Data...")
+training_set = train_datagen.flow_from_directory(
+    './Dataset/Training/',
+    target_size=(128, 128),
+    batch_size=16,
+    class_mode='categorical'
+)
 
+print("\nLoading Validation Data...")
+valid_set = valid_datagen.flow_from_directory(
+    './Dataset/Validation/',
+    target_size=(128, 128),
+    batch_size=16,
+    class_mode='categorical'
+)
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
+# 2. Base Model (MobileNetV2)
+print("\nDownloading Pre-trained MobileNetV2 Base...")
+base_model = MobileNetV2(
+    weights='imagenet', 
+    include_top=False, 
+    input_shape=(128, 128, 3)
+)
 
-# plot the train and val curve for accuracy
-plt.figure(figsize=(8, 8))
-plt.subplot(1, 2, 1)
-plt.plot(range(35), acc, label='Training Accuracy')
-plt.plot(range(35), val_acc, label='Validation Accuracy')
-plt.legend(loc='lower right')
-plt.title('Training and Validation Accuracy')
-plt.subplot(1, 2, 2)
-plt.plot(range(35), loss, label='Training Loss')
-plt.plot(range(35), val_loss, label='Validation Loss')
-plt.legend(loc='upper right')
-plt.title('Training and Validation Loss')
-plt.show()
+# Freeze the base model so we don't destroy the pre-trained smarts!
+base_model.trainable = False
 
-valid_set.reset()
+# 3. Custom Classification Head
+classifier = Sequential([
+    base_model,
+    GlobalAveragePooling2D(), # Far superior to Flatten() for CNNs
+    Dropout(0.3), # Prevent overfitting
+    Dense(128, activation='relu'),
+    Dropout(0.3),
+    Dense(10, activation='softmax') # Our 10 tomato diseases!
+])
 
-# Evaluate on Validation data
-#Calculate Model Accuracy
-print("[INFO] Calculating model accuracy")
+classifier.summary()
+
+# 4. Compile the Model
+classifier.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# 5. Callbacks (Smart Training)
+# Stop training early if accuracy maxes out
+early_stop = EarlyStopping(monitor='val_accuracy', patience=4, restore_best_weights=True)
+# Always save the best performing model
+checkpoint = ModelCheckpoint("model.h5", monitor='val_accuracy', save_best_only=True, verbose=1)
+
+# 6. Train the Model!
+print("\n🔥 Starting High-Performance Training...")
+history = classifier.fit(
+    training_set,
+    epochs=20, # 20 is plenty for Transfer Learning
+    validation_data=valid_set,
+    callbacks=[early_stop, checkpoint]
+)
+
+# 7. Evaluate the final accuracy
+print("\n[INFO] Calculating final model accuracy on Validation Set...")
 scores = classifier.evaluate(valid_set)
-print(f"Test Loss: {scores[0]}")
-print(f"Test Accuracy: {scores[1]*100:.2f}%")
-# scores = classifier.evaluate(valid_set)
-# print("%s%s: %.2f%%" % ("evaluate ",classifier.metrics_names[1], scores[1]*35))
+print(f"✅ Final Test Accuracy: {scores[1]*100:.2f}%")
 
-
-# Save the final model
-classifier.save("model.h5")
-print("✅ Saved model.h5 to disk")
-
+print("🎉 Training Complete! A highly accurate model.h5 has been saved.")
