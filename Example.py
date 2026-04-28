@@ -41,11 +41,10 @@ else:
     confidence = float(np.max(result) * 100)
 
     # Output result
-    info = DISEASE_INFO.get(pred_idx, {"title": "Unknown", "treatment": "Consult an expert."})
+    disease_name = DISEASE_INFO.get(pred_idx, "Unknown Disease")
     
     print("-" * 30)
     print(f"🔍 PREDICTION RESULT:")
-    print(f"Disease Name: {info['title']}")
+    print(f"Disease Name: {disease_name}")
     print(f"Confidence:   {confidence:.2f}%")
-    print(f"Treatment:    {info['treatment']}")
     print("-" * 30)
