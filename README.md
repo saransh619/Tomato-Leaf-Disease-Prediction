@@ -3,7 +3,9 @@
 
 > **🌍 Experience the AI:** <a href="https://huggingface.co/spaces/saransh619/Tomato-Disease-AI" target="_blank">Click here to view and interact with the Live Demo of this project.</a>
 
-A professional, deep-learning-powered web application that identifies 10 different types of tomato plant diseases using a Convolutional Neural Network (CNN). Originally developed as my Final Year University Project in 2022, I have completely re-architected, redesigned, and modernized the entire system in 2026 to reflect industry-standard practices, including a premium glassmorphic UI, Docker deployment, and optimized backend logic.
+A professional, deep-learning-powered web application that identifies 10 different types of tomato plant diseases using **MobileNetV2 Transfer Learning**. 
+
+> **🔄 Project Evolution:** Originally developed in 2022 as my Final Year University Project using a basic CNN, I have completely re-architected and modernized the system in 2026. The most significant upgrade was migrating from a simple CNN to **MobileNetV2 Transfer Learning**, which increased real-world accuracy and made the model robust against background noise and non-leaf images.
 
 ## 🌟 Key Features
 - **Modern Dark Mode UI**: A stunning, responsive dashboard built with 2026 design principles.
@@ -13,17 +15,17 @@ A professional, deep-learning-powered web application that identifies 10 differe
 
 ---
 
-## 🧠 The AI Model (CNN Architecture)
-This project uses a custom-trained **Convolutional Neural Network (CNN)** built with TensorFlow/Keras. The architecture is designed to capture fine-grained patterns in leaf textures:
+## 🧠 The AI Model (MobileNetV2 Transfer Learning)
+This project utilizes **Transfer Learning** with the **MobileNetV2** architecture, pre-trained on the ImageNet dataset. This approach provides significantly higher accuracy and robustness compared to basic CNN models:
 
-1. **Input Layer**: Processes images at `128x128` resolution.
-2. **Convolutional Layers (Conv2D)**: Two layers with 32 filters each to detect features like spots, yellowing, and mold.
-3. **Dropout Layers (0.5)**: Integrated after each conv layer to prevent overfitting and ensure high generalization.
-4. **MaxPooling**: Reduces spatial dimensions while retaining critical information.
-5. **Flattening**: Converts the 2D feature maps into a 1D vector.
-6. **Dense (Fully Connected) Layers**:
-   - A hidden layer with 128 neurons (ReLU activation).
-   - An output layer with 10 neurons (Softmax activation) representing the 10 disease categories.
+1. **Base Model**: MobileNetV2 (frozen) for high-level feature extraction.
+2. **Input Layer**: Processes images at `128x128` resolution.
+3. **Global Average Pooling**: Reduces the spatial dimensions of the feature maps efficiently.
+4. **Custom Head**:
+   - Dropout layer (0.3) to prevent overfitting.
+   - Dense hidden layer (128 neurons, ReLU activation).
+   - Final Dropout layer (0.3).
+   - Output layer with 10 neurons (Softmax activation) representing the 10 disease categories.
 
 ---
 
